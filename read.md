@@ -95,6 +95,40 @@ As shown above, MongoDB support RegEx, which allows us to do some less exact sea
 * /war.*peace/i - Matches a string that has "war" followed by "peace" with any number of characters between (case-insensitive).
 * /^war and peace$/i - Must have an exact match but case-insensitive.
 
+#### Evaluation Operators: $where, $text, $regex, $mod
+
+There are many times where we many need to find documents based upon a more complicated process such as a mathematical model or two properties being equal.  This is where the evaluation operators `$where`, `$text`, `$regex`, and `$mod` come in.
+
+Let's start with `$mod`, or modulus, which is the remainder of a division computation.  If we wanted to only find books that were published on an odd year we could divide the year by 2 and if the remainder is 0, then the year is even, otherwise it is odd.
+
+```javascript
+db.books.find({year: {$mod: [2, 1]}})
+```
+The `$mod` operator takes an array with 2 elements.  The first element is the divisor of the equation, the second element is the remainder value that must match for the record to be retrieved.  So, `{year: {$mod: [2, 1]}}` will return all books whose year, when divided by 2, have a remainder of 0.
+
+The `$regex` was discussed earlier, but allows you to use it in an *AND* query with other operators.  Also, the `$regex` cannot be used inside of an `$in` operator.  The queries `{title: /war/i}` and `{title: {$regex: /war/i}}` are identical except we can add more conditions onto the second.
+
+`$text` will perform a text search on any properties that have a 'text' index type (We will cover indexes laters).  This means it does not specifiy a specific field, rather it finds all text indexes and searches on those fields.  If there are no fields with that index, you will receive and error.
+
+```javascript
+//Unless you have defined an index on books this will throw an error.
+db.books.find({$text: {$search: "War"}})
+```
+
+Finally, there is the `$where` operator which is very useful.  It is similar to a SQL `WHERE` clause and can perform multiple operations with more complexity.  You should be aware that it has a major drawback; it must be executed on every document in the collection.  It can be very inefficient and slower than other queries.
+
+The `$where` operator can take either a boolean expression string (i.e. `"true !== false"`) or a function that returns a boolean result.  It exposes the `this` object as the current selected object. The following two examples are functionally the same:
+
+```javascript
+db.books.find({$where: "this.title.length > 25"})
+```
+```javascript
+db.books.find({$where: function () {return this.title.length > 25}})
+```
+The `$where` operator is very powerful and has caveats.  It also exposes several variables and functions that you can use in your query.  For more information go to the documentation: http://docs.mongodb.org/manual/reference/operator/query/where/#op._S_where.
+
+#### Null and Missing Properties
+
 #### Querying subdocuments
 
 
