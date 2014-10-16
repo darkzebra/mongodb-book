@@ -134,7 +134,20 @@ The `$where` operator is very powerful and has caveats.  It also exposes several
 
 ### Projection (Selecting Fields)
 
-Projections are a way of choosing which fields in a document are returned.  It has the effect of reducing the amount of network traffic
+Projections are a way of choosing which fields in a document are returned.  It is an object passed as the 2nd parameter to the `find` method. The object has properties that match the document but they are defined as a 1 or a 0; 1 meaning the field is shown and 0 means the field is not shown.  By default the `_id` field is always returned unless it is explicitly hidden.
+
+```javascript
+// Gets the _id and title of all books
+db.books.find({}, {title: 1})
+
+//Gets the title of all books (exludes _id)
+db.books.find({}, {_id: 0, title: 1})
+
+//Get all books and all properties except year
+db.books.find({}, {year: 0})
+```
+
+
 
 ### Limits and Paging
 
