@@ -80,8 +80,9 @@ db.books.find({
   ]
 })
 ```
-which is the equivalent of saying "find all books with a title of *Mistborn* which have a year before 1800 or after 2000".  In SQL it would be `SELECT * FROM books where title='Mistborn' AND (year<1800 OR year>2000)`.  There is also a `$and` operator as well as:
+which is the equivalent of saying "find all books with a title of *Mistborn* which have a year before 1800 or after 2000".  In SQL it would be `SELECT * FROM books where title='Mistborn' AND (year<1800 OR year>2000)`.  The other logical operators are:
 
+* `$and` - Finds records that match all criteria.
 * `$nor` - Finds all documents that are neither this *NOR* that, will find opposite records of `$or`.
 * `$not` - Inverts Query Document to find document that do not match it.
 
@@ -104,18 +105,18 @@ Let's start with `$mod`, or modulus, which is the remainder of a division comput
 ```javascript
 db.books.find({year: {$mod: [2, 1]}})
 ```
-The `$mod` operator takes an array with 2 elements.  The first element is the divisor of the equation, the second element is the remainder value that must match for the record to be retrieved.  So, `{year: {$mod: [2, 1]}}` will return all books whose year, when divided by 2, have a remainder of 0.
+The `$mod` operator takes an array with 2 elements.  The first element is the divisor of the equation, the second element is the remainder value that must match for the record to be retrieved.  So, `{year: {$mod: [2, 1]}}` will return all books whose year, when divided by 2, have a remainder of 1.
 
 The `$regex` was discussed earlier, but allows you to use it in an *AND* query with other operators.  Also, the `$regex` cannot be used inside of an `$in` operator.  The queries `{title: /war/i}` and `{title: {$regex: /war/i}}` are identical except we can add more conditions onto the second.
 
-`$text` will perform a text search on any properties that have a 'text' index type (We will cover indexes laters).  This means it does not specifiy a specific field, rather it finds all text indexes and searches on those fields.  If there are no fields with that index, you will receive and error.
+`$text` will perform a text search on any properties that have a 'text' index type (We will cover indexes laters).  This means it does not specify a specific field, rather it finds all text indexes and searches on those fields.  If there are no fields with that index, you will receive an error.
 
 ```javascript
 //Unless you have defined an index on books this will throw an error.
 db.books.find({$text: {$search: "War"}})
 ```
 
-Finally, there is the `$where` operator which is very useful.  It is similar to a SQL `WHERE` clause and can perform multiple operations with more complexity.  You should be aware that it has a major drawback; it must be executed on every document in the collection.  It can be very inefficient and slower than other queries.
+Finally, there is the `$where` operator which is very useful.  It is similar to a SQL `WHERE` clause and can perform multiple operations with more complexity.  You should be aware that it has a major drawback; it must be executed on every document in the collection, so it can be very inefficient and slower than other queries.
 
 The `$where` operator can take either a boolean expression string (i.e. `"true !== false"`) or a function that returns a boolean result.  It exposes the `this` object as the current selected object. The following two examples are functionally the same:
 
@@ -125,9 +126,23 @@ db.books.find({$where: "this.title.length > 25"})
 ```javascript
 db.books.find({$where: function () {return this.title.length > 25}})
 ```
-The `$where` operator is very powerful and has caveats.  It also exposes several variables and functions that you can use in your query.  For more information go to the documentation: http://docs.mongodb.org/manual/reference/operator/query/where/#op._S_where.
+The `$where` operator is very powerful but has caveats.  It also exposes several variables and functions that you can use in your query.  For more information go to the documentation: http://docs.mongodb.org/manual/reference/operator/query/where/#op._S_where.
 
 #### Null and Missing Properties
+
+In our books collection, there are a few books that do not have years associated with them.  Whenever we do a query using the `year` property, those books are automatically excluded.  This is a nice feature of MongoDB (and NoSQL databases) because it allows for documents that have slightly different schemas.  With that feature, how do we find all of our records that don't have a certain property?  MongoDB provides an `$exists` operator to find these records.
+
+```javascript
+db.books.find({year: {$exists: false}})
+```
+This query will find something like:
+
+```javascript
+{ "_id" : ObjectId("5439e9a0fc21c80f8a1a3074"), "title" : "The Art of War", "author" : { "firstname" : "Sun", "lastname" : "Tzu" } }
+{ "_id" : ObjectId("5439e9a0fc21c80f8a1a3076"), "title" : "Iliad", "author" : "Homer" }
+```
+What about searching for `null` (i.e. `db.books.find({year: null})`)?  This will also work but it will also match records that have explicitly set the field value to `null`.  So, `null` will find records without the field and records where it has been set to `null`.  `$exists: false` will only find records where the field has not been set.
+
 
 #### Querying subdocuments
 
