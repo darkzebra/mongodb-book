@@ -90,11 +90,11 @@ which is the equivalent of saying "find all books with a title of *Mistborn* whi
 
 As shown above, MongoDB support RegEx, which allows us to do some less exact searches on our strings.  The `db.books.find({title: /War/})` call would find both "The Art of War" and "War and Peace".  MongoDB uses Perl Compatible Regular Expressions or PCRE for the Reglar Expressions.  Since RegEx could be a book in itself, I am going to refer you to the Wikipedia page for more details (http://en.wikipedia.org/wiki/Perl_Compatible_Regular_Expressions) and then give a few examples.
 
-* /^War/ - Must begin with case-sensitive "War".
-* /War/ - Must have the string "War" (case-sensitive) somewhere in the value.
-* /war/i - Same a above, but case-insensitive.
-* /war.*peace/i - Matches a string that has "war" followed by "peace" with any number of characters between (case-insensitive).
-* /^war and peace$/i - Must have an exact match but case-insensitive.
+* `/^War/` - Must begin with case-sensitive "War".
+* `/War/` - Must have the string "War" (case-sensitive) somewhere in the value.
+* `/war/i` - Same a above, but case-insensitive.
+* `/war.*peace/i` - Matches a string that has "war" followed by "peace" with any number of characters between (case-insensitive).
+* `/^war and peace$/i` - Must have an exact match but case-insensitive.
 
 #### Evaluation Operators: $where, $text, $regex, $mod
 
