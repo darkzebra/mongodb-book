@@ -144,8 +144,24 @@ This query will find something like:
 What about searching for `null` (i.e. `db.books.find({year: null})`)?  This will also work but it will also match records that have explicitly set the field value to `null`.  So, `null` will find records without the field and records where it has been set to `null`.  `$exists: false` will only find records where the field has not been set.
 
 
-#### Querying subdocuments
+#### Querying Embedded Fields and Sub-Documents
 
+The book documents have a field named author, which is a sub-document with `firstname` and `lastname` properties.  We can search for documents based upon the values of a sub-document (or an Embedded Field) using the dot notation.  It requires that the property key is in quotation marks to be valid bson like `"author.firstname"`.  To find books by John Steinbeck use the following querying:
+
+```javascript
+db.books.find({"author.lastname": "Steinbeck"})
+```
+This will yield one record.
+
+```
+{ "_id" : ObjectId("5439e9a0fc21c80f8a1a306c"), "title" : "East of Eden", "year" : 1952, "author" : { "firstname" : "John", "lastname" : "Steinbeck" } }
+```
+A search can also be done on the entire sub-document rather than just the embedded field by passing in an object with the exact same properties and values as the sub-document, like so:
+
+```javascript
+db.books.find({"author": {"firstname": "John", "lastname": "Steinbeck"}})
+```
+This query will return the same result as the first query using an embedded field.
 
 ### Projection (Selecting Fields)
 
